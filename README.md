@@ -18,3 +18,11 @@ pip install requirements.txt
 
 Select a field, for example using geojson.io. And downloda geojson file or use my ./data/polygon.json.
 Then run example from main.py.
+
+98% cloudy
+
+![image info](./img/polygon_true_color_98.png)
+
+0% cloudy
+
+![image info](./img/polygon_true_color_0.png)

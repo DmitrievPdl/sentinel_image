@@ -212,7 +212,7 @@ class SentinelImg():
         ax.add_patch(patch)
 
         plt.axis("off")
-        plt.savefig(f"./img/polygon_{type}_{self.time_interval}.pdf", bbox_inches = 'tight', pad_inches = 0)
+        plt.savefig(f"./img/polygon_{type}_{self.cloud_percent}.png", bbox_inches = 'tight', pad_inches = 0)
     
     @property
     def public(self):
