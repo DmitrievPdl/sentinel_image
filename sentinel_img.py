@@ -12,15 +12,20 @@ import os
 from evalscripts import *
 import pandas as pd
 import time
+import functools
 
 Coords = namedtuple("Coords",[
             "x_max", "y_max",
             "x_min", "y_min"
 ])
+def attrs(obj):
+    ''' Return public attribute values dictionary for an object '''
+    return dict(i for i in vars(obj).items() if i[0][0] != '_')
 
 def get_request(img, evalscript, **kwargs):
     """
-    Get cloud mask request for time interval
+    Build a query using the given
+    evalscript and img.
     """
 
     return SentinelHubRequest(
@@ -52,7 +57,6 @@ class User():
             raise Exception("Client id and client secret is empty.")
         self.config = config
 
-
 class SentinelImg():
     def __init__(self, polygons, time_interval,
                  user, zoom = 1.7, size = (1000, 1500)):
@@ -71,6 +75,7 @@ class SentinelImg():
         self._true_color_map = None
         self._cloud_percent = None
         self._cloud_map = None
+        self.is_available()
 
     @staticmethod
     def check_size(size):
@@ -131,7 +136,7 @@ class SentinelImg():
     @property
     def true_color_map(self):
         """
-        Download true colot map from API
+        Download true colot map from API.
         """
         if not isinstance(self._true_color_map, np.ndarray):
             request = get_request(self, evalscript_true_color)
@@ -141,7 +146,7 @@ class SentinelImg():
     @property
     def cloud_map(self):
         """
-        Download cloud map from API
+        Download cloud map from API.
         """
         if not isinstance(self._cloud_map, pd.DataFrame):
             geometry = Geometry(Polygon(self.external_polygon), CRS.WGS84)
@@ -152,6 +157,15 @@ class SentinelImg():
             )
             self._cloud_map = pd.DataFrame(request.get_data()[0])
         return self._cloud_map
+
+    def is_available(self):
+        """
+        Check image is available.
+        """
+        request = get_request(self, evalscript_is_available)
+        df_dataMask = pd.DataFrame(request.get_data()[0])
+        dataMask_px = (df_dataMask == 1 ).sum().sum()
+        self.is_available = dataMask_px == 0
 
     @property
     def cloud_percent(self):
@@ -198,4 +212,15 @@ class SentinelImg():
         ax.add_patch(patch)
 
         plt.axis("off")
-        plt.savefig(f"./img/polygon_{type}.pdf", bbox_inches = 'tight', pad_inches = 0)
+        plt.savefig(f"./img/polygon_{type}_{self.time_interval}.pdf", bbox_inches = 'tight', pad_inches = 0)
+    
+    @property
+    def public(self):
+        ''' Return the public model attributes '''
+        return attrs(self)
+
+    def __str__(self):
+        return f'Sentinel Image time interval: {self.time_interval}'
+
+    def __repr__(self):
+        return f'<SentinelImg {self.public}>'

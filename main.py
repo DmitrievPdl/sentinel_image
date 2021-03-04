@@ -1,11 +1,10 @@
 INPUT_FILE = './data/polygon.json'
 
-from sentinelhub import read_data, SHConfig
+from sentinelhub import read_data
 import numpy as np
 from sentinel_img import SentinelImg, User
 from shapely.geometry import shape
 import datetime
-import os
 
 if __name__ == "__main__":
     # Make user with client id
@@ -29,5 +28,6 @@ if __name__ == "__main__":
     for slot in slots:
         print(slot)
         img = SentinelImg(polygons, slot, user)
+        print(f'img is available: {img.is_available}')
         print(f'{img.cloud_percent} - % cloudy')
         img.plot(type='true_color', factor=3.5/255, clip_range=(0,1))
